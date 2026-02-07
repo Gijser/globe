@@ -1,36 +1,63 @@
-# Globe
 
-Simple WebGL/Three-style globe project.
+# Globe: 3D EONET Event Visualizer
 
-## Overview
+This project is an interactive 3D globe built with Three.js that visualizes recent NASA EONET (Earth Observatory Natural Event Tracker) events as markers on the globe.
 
-This project contains a minimal globe demo served via the static `index.html` in the repository root. Textures used by the globe are stored in the `Textures/` folder.
+## Features
+
+- 3D globe with realistic textures (8K day map, normal/specular maps)
+- Loads and displays the 20 most recent EONET events as interactive markers
+- Clickable event markers open the event's NASA EONET page
+- Hovering a marker shows the event title in a floating HUD
+- Responsive design and smooth camera controls
+- Modern ES module code structure
 
 ## Quick Start
 
-- Open [index.html](index.html) in a web browser (double-click or drag into a browser window).
-- For local testing with CORS-sensitive texture loading, serve the folder with a static server (example using Python 3):
-
-```bash
-python -m http.server 8000
-# then open http://localhost:8000
-```
+1. **Install dependencies (for testing only):**
+	 ```bash
+	 npm install
+	 ```
+2. **Serve locally:**
+	 - With Python 3:
+		 ```bash
+		 python -m http.server 8000
+		 # then open http://localhost:8000
+		 ```
+	 - Or use any static server (e.g. `npx serve`)
+3. **Open [index.html](index.html) in your browser.**
 
 ## File Structure
 
-- [index.html](index.html) — main demo page
-- Textures/ — texture image assets used by the globe
+- `index.html` — Main demo page and app entry point
+- `Textures/8k_earth_daymap.jpg` — Globe color texture (8K)
+- `scripts/coordUtils.js` — Latitude/longitude to 3D vector conversion
+- `scripts/eonetLoader.js` — Loads EONET events and adds globe markers
+- `scripts/markerInteraction.js` — Handles marker hover/click interaction
+- `scripts/eonetLoader.test.cjs` — Jest test for EONET loader logic
+- `package.json`, `jest.config.js` — Test/development config
 
-## Notes
+## EONET Event Markers
 
-- If the globe uses external libraries (e.g., Three.js), ensure those libraries are available or served locally. If you want, I can add a minimal `package.json` and install dependencies.
-- If you plan to deploy, prefer serving via HTTPS to avoid mixed-content issues when loading remote resources.
+- The globe fetches live event data from NASA's EONET API (https://eonet.gsfc.nasa.gov/api/v3/events/geojson)
+- Only events with Point geometry are shown
+- Only the 20 most recent events (by date) are displayed
+- Clicking a marker opens the event's NASA page
 
-## Next steps I can help with
+## Development & Testing
 
-- Add usage examples and API notes
-- Add a `docs/` folder with screenshots and explanations
-- Create a development `package.json` and npm scripts
+- All code uses ES modules (import/export)
+- Unit tests for the EONET loader are written in Jest (see `scripts/eonetLoader.test.cjs`)
+- To run tests:
+	```bash
+	npm test
+	```
+
+## Dependencies
+
+- [Three.js](https://threejs.org/) (loaded via CDN/importmap in `index.html`)
+- [NASA EONET API](https://eonet.gsfc.nasa.gov/)
+- [Jest](https://jestjs.io/) (for testing, local only)
 
 ---
-If you'd like more detailed documentation (API, architecture, or deployment), tell me which areas to expand.
+For questions, improvements, or to expand the documentation, open an issue or ask for help!
