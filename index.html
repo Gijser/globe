@@ -4,44 +4,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>3D Globe</title>
-    <style>
-      html,
-      body {
-        height: 100%;
-        margin: 0;
-        background: #05070b;
-        overflow: hidden;
-      }
-      #app {
-        height: 100%;
-        width: 100%;
-      }
-      .hud {
-        position: fixed;
-        left: 12px;
-        top: 12px;
-        font:
-          12px/1.3 system-ui,
-          -apple-system,
-          Segoe UI,
-          Roboto,
-          sans-serif;
-        color: rgba(255, 255, 255, 0.75);
-        background: rgba(0, 0, 0, 0.25);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        padding: 10px 12px;
-        border-radius: 12px;
-        backdrop-filter: blur(8px);
-        user-select: none;
-      }
-      .hud b {
-        color: rgba(255, 255, 255, 0.92);
-      }
-    </style>
+    <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <div id="app"></div>
-    <!-- Put this BEFORE your module script -->
+    <div id="loadPage">
+      <div class="loader-text">Loading events</div>
+      <div class="loader"></div>
+    </div>
+    <div id="app" style="visibility: hidden"></div>
+
+    <div class="hud">
+      <div></div>
+      <h2>Events</h2>
+      <ul id="event-list"></ul>
+    </div>
+
     <script type="importmap">
       {
         "imports": {
@@ -53,134 +30,40 @@
 
     <script type="module">
       import * as THREE from "three";
-      import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-      import { latLonToVec3 } from "./scripts/coordUtils.js";
-      import { loadEonetMarkers } from "./scripts/eonetLoader.js";
+      import { createGlobe } from "./scripts/globeMaker.js";
+      import { markerFactory } from "./scripts/markerFactory.js";
       import { setupMarkerInteraction } from "./scripts/markerInteraction.js";
+      import { createHudDiv } from "./scripts/hudSetup.js";
+      import { createEventHudUpdater } from "./scripts/eventHud.js";
+      import { loadAndDisplayEvents, showLoaderUntilLoaded } from "./scripts/eventLoader.js";
+      import { startAnimationLoop } from "./scripts/animationLoop.js";
+      import { setupResizeHandler } from "./scripts/resizeHandler.js";
 
-      // Get the container div where the renderer will attach the canvas
       const container = document.querySelector("#app");
       if (!container) throw new Error('Missing <div id="app"></div>');
 
-      // Set up the WebGL renderer and attach it to the DOM
-      const renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); // for HiDPI screens
-      renderer.outputColorSpace = THREE.SRGBColorSpace;
-      container.appendChild(renderer.domElement);
+      // Globe, camera, controls, etc.
+      const { scene, camera, renderer, controls, globe, markers, atmosphere } = createGlobe(container);
 
-      // Create the main scene and set its background color
-      const scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x05070b);
+      // Event HUD
+      const eventHud = createEventHudUpdater("#event-list");
 
-      // Set up a perspective camera so we can view the globe
-      const camera = new THREE.PerspectiveCamera(
-        45, // field of view
-        window.innerWidth / window.innerHeight, // aspect ratio
-        0.1, // near clipping plane
-        100, // far clipping plane
-      );
-      camera.position.z = 6; // move camera back so globe is visible
+      // Load events and show loader
+      showLoaderUntilLoaded(() => loadAndDisplayEvents(
+        markers,
+        markerFactory,
+        events => eventHud.setEvents(events)
+      ));
 
-      // Add mouse/touch controls for rotating and zooming the camera
-      const controls = new OrbitControls(camera, renderer.domElement);
-      controls.enableDamping = true; // smooth camera motion
-      controls.enablePan = false; // disable panning, only allow orbit/zoom
-
-      // Add ambient and directional light to illuminate the globe
-      scene.add(new THREE.AmbientLight(0xffffff, 0.5)); // soft fill light
-      const sun = new THREE.DirectionalLight(0xffffff, 1.2); // main light
-      sun.position.set(5, 2, 5);
-      scene.add(sun);
-
-      // Texture loader for loading images onto the globe
-      const loader = new THREE.TextureLoader();
-
-      // URLs for the globe's textures
-      // 8K color (very detailed)
-      const earthMapUrl = "./textures/8k_earth_daymap.jpg";
-      // 2K normal/spec (three.js examples)
-      const earthSpecUrl =
-        "https://threejs.org/examples/textures/planets/earth_specular_2048.jpg";
-      const earthNormUrl =
-        "https://threejs.org/examples/textures/planets/earth_normal_2048.jpg";
-
-      // Load the textures for the globe
-      const earthMap = loader.load(earthMapUrl);
-      const earthSpec = loader.load(earthSpecUrl);
-      const earthNorm = loader.load(earthNormUrl);
-
-      // Set color space for correct color rendering
-      earthMap.colorSpace = THREE.SRGBColorSpace;
-
-      // Create the globe mesh with a sphere geometry and Phong material for lighting
-      const globe = new THREE.Mesh(
-        new THREE.SphereGeometry(2, 96, 96), // radius, width/height segments
-        new THREE.MeshPhongMaterial({
-          map: earthMap, // color texture
-          specularMap: earthSpec, // shiny highlights
-          normalMap: earthNorm, // surface detail
-          normalScale: new THREE.Vector2(0.85, 0.85),
-          specular: new THREE.Color(0x333333),
-          shininess: 12,
-        }),
-      );
-      scene.add(globe);
-      // --- NASA EONET markers (GeoJSON) ---
-      // Group to hold all event marker meshes
-      const markers = new THREE.Group();
-      scene.add(markers);
-
-      // latLonToVec3 now imported from globeHelpers.js
-
-      // Use the helper to load EONET markers and add them to the group
-      const dotGeom = new THREE.SphereGeometry(0.02, 10, 10); // marker size
-      const dotMat = new THREE.MeshBasicMaterial(); // default white
-      function markerFactory(lat, lon, userData) {
-        const marker = new THREE.Mesh(dotGeom, dotMat.clone());
-        marker.position.copy(latLonToVec3(lat, lon, 2.01));
-        marker.userData = userData;
-        return marker;
-      }
-      loadEonetMarkers(markers, markerFactory);
-      
-      // Add a subtle glowing atmosphere around the globe
-      const atmosphere = new THREE.Mesh(
-        new THREE.SphereGeometry(2.03, 96, 96),
-        new THREE.MeshBasicMaterial({
-          color: 0x59a7ff,
-          transparent: true,
-          opacity: 0.12,
-          blending: THREE.AdditiveBlending,
-          side: THREE.BackSide,
-        }),
-      );
-      scene.add(atmosphere);
-
-      // HUD and interaction for EONET markers
-      // Create a floating HUD div for showing marker titles on hover
-      const hud = document.createElement("div");
-      hud.className = "hud";
-      hud.style.display = "none";
-      document.body.appendChild(hud);
-      // Use the helper to set up pointer/click interaction
+      // HUD for marker hover
+      const hud = createHudDiv();
       setupMarkerInteraction(markers, camera, hud);
 
-      // Main animation loop: updates controls, keeps atmosphere in sync, and renders the scene
-      function animate() {
-        atmosphere.rotation.y = globe.rotation.y;
-        controls.update();
-        renderer.render(scene, camera);
-        requestAnimationFrame(animate);
-      }
-      animate();
+      // Animation loop
+      startAnimationLoop(atmosphere, globe, controls, renderer, scene, camera);
 
-      // Handle window resizing to keep the scene properly scaled
-      window.addEventListener("resize", () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-      });
+      // Responsive resize
+      setupResizeHandler(camera, renderer);
     </script>
   </body>
 </html>

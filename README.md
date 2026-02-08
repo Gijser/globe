@@ -34,8 +34,8 @@ This project is an interactive 3D globe built with Three.js that visualizes rece
 - `scripts/coordUtils.js` — Latitude/longitude to 3D vector conversion
 - `scripts/eonetLoader.js` — Loads EONET events and adds globe markers
 - `scripts/markerInteraction.js` — Handles marker hover/click interaction
-- `scripts/eonetLoader.test.cjs` — Jest test for EONET loader logic
-- `package.json`, `jest.config.js` — Test/development config
+- `scripts/eonetLoader.test.js` — Vitest test for EONET loader logic
+- `package.json` — Project and test config
 
 ## EONET Event Markers
 
@@ -47,17 +47,17 @@ This project is an interactive 3D globe built with Three.js that visualizes rece
 ## Development & Testing
 
 - All code uses ES modules (import/export)
-- Unit tests for the EONET loader are written in Jest (see `scripts/eonetLoader.test.cjs`)
+- Unit tests for the EONET loader are written in Vitest (see `scripts/eonetLoader.test.js`)
 - To run tests:
-	```bash
-	npm test
-	```
+```bash
+npx vitest run
+```
 
 ## Dependencies
 
 - [Three.js](https://threejs.org/) (loaded via CDN/importmap in `index.html`)
 - [NASA EONET API](https://eonet.gsfc.nasa.gov/)
-- [Jest](https://jestjs.io/) (for testing, local only)
+- [Vitest](https://vitest.dev/) (for testing, local only)
 
 ---
 For questions, improvements, or to expand the documentation, open an issue or ask for help!
