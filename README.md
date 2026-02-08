@@ -11,6 +11,7 @@ This project is an interactive 3D globe built with Three.js that visualizes rece
 - Hovering a marker shows the event title in a floating HUD
 - Responsive design and smooth camera controls
 - Modern, modular ES module code structure
+- Field to choose how many events to show
 
 ## Quick Start
 
