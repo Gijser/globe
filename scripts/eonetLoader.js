@@ -6,8 +6,8 @@
  * @param {function} markerFactory Function(lat, lon, userData) => THREE.Mesh
  * @returns {Promise<void>}
  */
-export async function loadEonetMarkers(markersGroup, markerFactory) {
-  const url = "https://eonet.gsfc.nasa.gov/api/v3/events/geojson?limit=20";
+export async function loadEonetMarkers(markersGroup, markerFactory, eventLimit) {
+  const url = "https://eonet.gsfc.nasa.gov/api/v3/events/geojson?limit=" + eventLimit;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`EONET fetch failed: ${res.status}`);
   const geojson = await res.json();
@@ -28,7 +28,7 @@ export async function loadEonetMarkers(markersGroup, markerFactory) {
   }
   // Sort by most recent date descending
   pointEvents.sort((a, b) => b.eventTime - a.eventTime);
-  const last20 = pointEvents.slice(0, 20);
+  const last20 = pointEvents.slice(0, eventLimit);
   console.log(`EONET: total Point events: ${pointEvents.length}, showing: ${last20.length}`);
   for (const { feature, eventDateStr } of last20) {
     const geom = feature.geometry;

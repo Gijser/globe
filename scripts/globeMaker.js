@@ -19,12 +19,7 @@ export function createGlobe(container) {
   scene.background = new THREE.Color(0x05070b);
 
   // Set up a perspective camera
-  const camera = new THREE.PerspectiveCamera(
-    45,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    100
-  );
+  const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
   camera.position.z = 6;
 
   // Add mouse/touch controls
@@ -42,7 +37,7 @@ export function createGlobe(container) {
 
   // Texture loader
   const loader = new THREE.TextureLoader();
-  const earthMapUrl = "./textures/8k_earth_daymap.jpg";
+  const earthMapUrl = "./media/8k_earth_daymap.jpg";
   const earthSpecUrl = "https://threejs.org/examples/textures/planets/earth_specular_2048.jpg";
   const earthNormUrl = "https://threejs.org/examples/textures/planets/earth_normal_2048.jpg";
   const earthMap = loader.load(earthMapUrl);
@@ -60,7 +55,7 @@ export function createGlobe(container) {
       normalScale: new THREE.Vector2(0.85, 0.85),
       specular: new THREE.Color(0x333333),
       shininess: 12,
-    })
+    }),
   );
   scene.add(globe);
 
@@ -77,7 +72,7 @@ export function createGlobe(container) {
       opacity: 0.12,
       blending: THREE.AdditiveBlending,
       side: THREE.BackSide,
-    })
+    }),
   );
   scene.add(atmosphere);
 

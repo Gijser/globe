@@ -76,3 +76,21 @@ body {
     60%{background-position:0%  50%, 50% 100%,100%   0%}
     80%{background-position:0%  50%, 50%  50%,100% 100%}
 }
+.hud-section {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 12px;
+  align-items: center;
+}
+.hud-section input {
+  color: black;
+  height: 50%;
+  margin-left: 8px;
+  padding: 4px 8px;
+}
+.hud-section button {
+  margin-left: 8px;
+  padding: 4px 8px;
+  cursor: pointer;
+  color: black;
+}

@@ -7,13 +7,13 @@ import { loadEonetMarkers } from "./eonetLoader.js";
  * @param {Function} setEvents - Function to update the HUD with shown events
  * @returns {Promise<void>}
  */
-export async function loadAndDisplayEvents(markers, markerFactory, setEvents) {
+export async function loadAndDisplayEvents(markers, markerFactory, setEvents, eventLimit) {
   const shownEvents = [];
   function markerFactoryWithCollect(lat, lon, userData) {
     shownEvents.push(userData);
     return markerFactory(lat, lon, userData);
   }
-  await loadEonetMarkers(markers, markerFactoryWithCollect);
+  await loadEonetMarkers(markers, markerFactoryWithCollect, eventLimit);
   setEvents(shownEvents);
 }
 

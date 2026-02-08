@@ -5,65 +5,88 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>3D Globe</title>
     <link rel="stylesheet" href="./style.css" />
+    <link rel="icon" type="image/png" href="./media/globe.png" />
   </head>
+
+  <!-- Import map for Three.js and its addons -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"
+      }
+    }
+  </script>
+
+  <!-- Main script -->
+  <script type="module">
+    import * as THREE from "three";
+    import { createGlobe } from "./scripts/globeMaker.js";
+    import { markerFactory } from "./scripts/markerFactory.js";
+    import { setupMarkerInteraction } from "./scripts/markerInteraction.js";
+    import { createHudDiv } from "./scripts/hudSetup.js";
+    import { createEventHudUpdater } from "./scripts/eventHud.js";
+    import { loadAndDisplayEvents, showLoaderUntilLoaded } from "./scripts/eventLoader.js";
+    import { startAnimationLoop } from "./scripts/animationLoop.js";
+    import { setupResizeHandler } from "./scripts/resizeHandler.js";
+
+    const container = document.querySelector("#app");
+    if (!container) throw new Error('Missing <div id="app"></div>');
+
+    // Globe, camera, controls, etc.
+    const { scene, camera, renderer, controls, globe, markers, atmosphere } = createGlobe(container);
+
+    // Event HUD
+    const eventHud = createEventHudUpdater("#event-list");
+
+    // Load events and show loader
+    showLoaderUntilLoaded(() =>
+      loadAndDisplayEvents(markers, markerFactory, (events) => eventHud.setEvents(events), 25),
+    );
+
+    // HUD for marker hover
+    const hud = createHudDiv();
+    setupMarkerInteraction(markers, camera, hud);
+
+    // Animation loop
+    startAnimationLoop(atmosphere, globe, controls, renderer, scene, camera);
+
+    // Responsive resize
+    setupResizeHandler(camera, renderer);
+
+    // Filter button event handler
+    const filterBtn = document.getElementById("event-filter-btn");
+    const eventFilterInput = document.getElementById("event-filter");
+    if (filterBtn && eventFilterInput) {
+      filterBtn.addEventListener("click", () => {
+        showLoaderUntilLoaded(() =>
+          loadAndDisplayEvents(
+            markers,
+            markerFactory,
+            (events) => eventHud.setEvents(events),
+            eventFilterInput.value
+          )
+        );
+      });
+    }
+  </script>
+
   <body>
+    <!-- Loading screen -->
     <div id="loadPage">
       <div class="loader-text">Loading events</div>
       <div class="loader"></div>
     </div>
     <div id="app" style="visibility: hidden"></div>
 
+    <!-- HUD for event list on top-left -->
     <div class="hud">
-      <div></div>
-      <h2>Events</h2>
+      <div class="hud-section">
+        <h2>Events</h2>
+        <input type="text" id="event-filter" placeholder="Filter events..." />
+        <button type="submit" id="event-filter-btn">Filter</button>
+      </div>
       <ul id="event-list"></ul>
     </div>
-
-    <script type="importmap">
-      {
-        "imports": {
-          "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js",
-          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"
-        }
-      }
-    </script>
-
-    <script type="module">
-      import * as THREE from "three";
-      import { createGlobe } from "./scripts/globeMaker.js";
-      import { markerFactory } from "./scripts/markerFactory.js";
-      import { setupMarkerInteraction } from "./scripts/markerInteraction.js";
-      import { createHudDiv } from "./scripts/hudSetup.js";
-      import { createEventHudUpdater } from "./scripts/eventHud.js";
-      import { loadAndDisplayEvents, showLoaderUntilLoaded } from "./scripts/eventLoader.js";
-      import { startAnimationLoop } from "./scripts/animationLoop.js";
-      import { setupResizeHandler } from "./scripts/resizeHandler.js";
-
-      const container = document.querySelector("#app");
-      if (!container) throw new Error('Missing <div id="app"></div>');
-
-      // Globe, camera, controls, etc.
-      const { scene, camera, renderer, controls, globe, markers, atmosphere } = createGlobe(container);
-
-      // Event HUD
-      const eventHud = createEventHudUpdater("#event-list");
-
-      // Load events and show loader
-      showLoaderUntilLoaded(() => loadAndDisplayEvents(
-        markers,
-        markerFactory,
-        events => eventHud.setEvents(events)
-      ));
-
-      // HUD for marker hover
-      const hud = createHudDiv();
-      setupMarkerInteraction(markers, camera, hud);
-
-      // Animation loop
-      startAnimationLoop(atmosphere, globe, controls, renderer, scene, camera);
-
-      // Responsive resize
-      setupResizeHandler(camera, renderer);
-    </script>
   </body>
 </html>
