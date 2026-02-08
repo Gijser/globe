@@ -6,11 +6,11 @@ This project is an interactive 3D globe built with Three.js that visualizes rece
 ## Features
 
 - 3D globe with realistic textures (8K day map, normal/specular maps)
-- Loads and displays the 20 most recent EONET events as interactive markers
+- Loads and displays the 20 most recent EONET events as interactive markers (API fetch is optimized using the limit parameter)
 - Clickable event markers open the event's NASA EONET page
 - Hovering a marker shows the event title in a floating HUD
 - Responsive design and smooth camera controls
-- Modern ES module code structure
+- Modern, modular ES module code structure
 
 ## Quick Start
 
@@ -32,7 +32,13 @@ This project is an interactive 3D globe built with Three.js that visualizes rece
 - `index.html` — Main demo page and app entry point
 - `Textures/8k_earth_daymap.jpg` — Globe color texture (8K)
 - `scripts/coordUtils.js` — Latitude/longitude to 3D vector conversion
-- `scripts/eonetLoader.js` — Loads EONET events and adds globe markers
+- `scripts/eonetLoader.js` — Loads EONET events and adds globe markers (fetches only 20 events using the API limit parameter)
+	- `scripts/globeMaker.js` — Globe creation logic
+	- `scripts/markerFactory.js` — Marker creation logic
+	- `scripts/hudSetup.js` — HUD creation logic
+	- `scripts/resizeHandler.js` — Window resize handler
+	- `scripts/animationLoop.js` — Animation loop logic
+	- `scripts/eventLoader.js` — Event loading and loader display logic
 - `scripts/markerInteraction.js` — Handles marker hover/click interaction
 - `scripts/eonetLoader.test.js` — Vitest test for EONET loader logic
 - `package.json` — Project and test config

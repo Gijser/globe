@@ -7,7 +7,7 @@
  * @returns {Promise<void>}
  */
 export async function loadEonetMarkers(markersGroup, markerFactory) {
-  const url = "https://eonet.gsfc.nasa.gov/api/v3/events/geojson";
+  const url = "https://eonet.gsfc.nasa.gov/api/v3/events/geojson?limit=20";
   const res = await fetch(url);
   if (!res.ok) throw new Error(`EONET fetch failed: ${res.status}`);
   const geojson = await res.json();
